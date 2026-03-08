@@ -29,6 +29,31 @@
 - `UpdateStateMachineTest`
 - `DataLayerSmokeTest`
 
+## 用户指定标记
+
+123456
+
+## PR 提交流程（简版）
+
+```bash
+git checkout main
+git pull origin main
+git checkout -b feature/<your-topic>
+# coding + test
+git add .
+git commit -m "feat: <summary>"
+git push -u origin feature/<your-topic>
+```
+
+
+## 启动最小可运行入口（Step3）
+
+```bash
+./scripts/run_launcher.sh
+```
+
+
 1. 新增 `core-update-engine`，实现更新任务状态机；
 2. 为每个 feature 增加 `data` 层仓储实现（远端 + 本地）；
 3. 接入一个最小可运行入口模块进行端到端联调。
+
