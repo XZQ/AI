@@ -1,299 +1,68 @@
-# 车载平台“应用商店”App 架构方案设计（V1）
+# 车载应用商店架构方案（V1）
 
-## 1. 目标与边界
+## 1. 目标
 
-### 1.1 产品目标
-- 提供稳定、可扩展、易维护的车载应用分发与管理能力。
-- 支持首页、详情、搜索、设置、应用更新提示等核心功能。
-- 在弱网、断网、车机资源受限场景下保持可用。
+- 提供稳定、可扩展、可维护的车载应用分发与升级能力。
+- 支持首页、详情、搜索、设置、更新中心等核心业务。
+- 在弱网或临时离线场景下保持可恢复与可观测。
 
-### 1.2 V1 功能边界
-- 浏览应用：首页推荐/分类、应用详情、搜索。
-- 应用管理：安装、升级、卸载、下载进度、失败重试。
-- 更新能力：
-  - 应用更新提示（角标/弹窗/列表）；
-  - 可配置自动检查更新；
-  - 手动检查更新。
-- 设置能力：
-  - 网络策略（仅 Wi-Fi 下载、蜂窝网络提醒）；
-  - 自动更新开关；
-  - 通知开关；
-  - 存储管理（缓存清理）。
-- 基础可观测性：日志、埋点、关键流程监控。
+## 2. 架构分层
 
-### 1.3 非功能要求（建议）
-- 冷启动时间：首页可交互 < 2s（缓存命中场景）。
-- 稳定性：关键流程（下载/安装）具备可恢复能力。
-- 安全性：包签名校验、来源校验、最小权限原则。
-- 可扩展性：后续可平滑支持专题页、榜单、灰度、AB 实验。
+采用 `Clean Architecture + Feature Module`：
 
----
+- Presentation：页面状态与交互编排（本仓库暂未实现 UI）。
+- Domain：业务规则、用例契约、仓储接口。
+- Data：仓储实现、数据聚合（当前为 in-memory 版本）。
+- Platform：系统能力封装（下载、安装、通知、调度，V1 预留）。
 
-## 2. 总体架构（分层 + 模块化）
-
-采用 **Clean Architecture + Feature Module**：
-
-- 横向分层：`Presentation` / `Domain` / `Data` / `Platform`。
-- 纵向模块：按业务能力拆分为若干 Feature 与 Core 模块。
+## 3. 模块划分
 
 ```text
-┌─────────────────────────────────────────────────────────┐
-│ Presentation Layer                                      │
-│  Home UI | Detail UI | Search UI | Settings UI | Update UI │
-└───────────────▲─────────────────────────────────────────┘
-                │ ViewModel / Presenter + UI State
-┌───────────────┴─────────────────────────────────────────┐
-│ Domain Layer                                            │
-│  UseCases + Entities + Domain Services + Policies       │
-└───────────────▲─────────────────────────────────────────┘
-                │ Repository Interfaces
-┌───────────────┴─────────────────────────────────────────┐
-│ Data Layer                                              │
-│  Repository Impl | Remote DS | Local DS | Cache         │
-└───────────────▲─────────────────────────────────────────┘
-                │ OS SDK / HAL / System Service
-┌───────────────┴─────────────────────────────────────────┐
-│ Platform Layer                                          │
-│  DownloadManager | PackageInstaller | Network | Storage  │
-│  Notification | Scheduler | Security                    │
-└─────────────────────────────────────────────────────────┘
+app/launcher                 # 最小可运行入口
+core/core-common             # 领域模型、错误模型、统一结果
+core/core-update-engine      # 更新状态机
+feature/*/domain             # 各业务域契约
+feature/*/data               # 各业务域 in-memory 实现
+tests/src                    # smoke 测试
 ```
 
-### 2.1 分层职责
-- **Presentation 层**：仅处理页面渲染、交互事件、状态机，不含业务细节。
-- **Domain 层**：承载业务规则（安装策略、更新策略、搜索排序策略等）。
-- **Data 层**：聚合远端接口与本地缓存，提供 Repository 实现。
-- **Platform 层**：对车机系统能力封装（下载、安装、调度、通知）。
+## 4. 关键领域对象
 
----
+- `AppInfo`：应用基础信息。
+- `AppDetail`：应用详情信息。
+- `UpdateInfo`：更新可用信息。
+- `InstallTask`：更新/安装任务状态。
+- `UserSetting`：用户设置项。
 
-## 3. 模块划分（建议目录）
+## 5. 关键流程
 
-```text
-app/
-  launcher/                # 宿主与导航装配
+### 5.1 主链路（Step3）
 
-core/
-  core-common/             # 通用类型、Result、错误码、工具
-  core-network/            # HTTP、鉴权、重试、拦截器
-  core-storage/            # DB、KV、缓存策略
-  core-telemetry/          # 日志、埋点、崩溃上报
-  core-security/           # 签名校验、哈希、证书管理
-  core-update-engine/      # 任务编排：下载/安装/重试/回滚
+`Home -> Detail -> Settings -> Update`
 
-feature/
-  feature-home/
-    presentation/
-    domain/
-    data/
-  feature-detail/
-    presentation/
-    domain/
-    data/
-  feature-search/
-    presentation/
-    domain/
-    data/
-  feature-settings/
-    presentation/
-    domain/
-    data/
-  feature-update-center/   # 更新列表、更新提醒、批量更新
-    presentation/
-    domain/
-    data/
+由 `AppFlowOrchestrator` 进行流程编排，并返回结构化 `FlowReport`。
 
-platform/
-  platform-download/       # 下载能力适配（系统 DownloadManager）
-  platform-installer/      # 安装/卸载能力适配
-  platform-scheduler/      # 定时任务、后台任务
-  platform-notification/   # 系统通知/车机提示能力
-```
+### 5.2 更新状态机
 
-### 3.1 依赖规则
-- Feature 只能依赖 Core 与自身内部层，不允许 Feature 间直接互相依赖。
-- Presentation 依赖 Domain 抽象，不依赖 Data 实现。
-- Data 依赖 Domain 的 Repository 接口并提供实现。
-- Platform 不感知业务，只提供能力封装。
+`IDLE -> QUEUED -> DOWNLOADING -> VERIFYING -> INSTALLING -> SUCCEEDED`
 
----
+并支持 `PAUSE/RESUME/CANCEL/RETRY` 分支。
 
-## 4. 核心业务对象与用例
+## 6. 错误模型
 
-### 4.1 关键领域对象（Domain Entities）
-- `AppInfo`：应用基础信息（id、名称、版本、评分、图标）。
-- `AppDetail`：详情扩展（截图、介绍、权限、更新日志）。
-- `InstallTask`：安装任务（taskId、状态、进度、错误码）。
-- `UpdateInfo`：更新信息（当前版本、目标版本、是否强更）。
-- `UserSetting`：用户配置（自动更新、网络策略、通知策略）。
+- 统一使用 `DomainResult.Success / DomainResult.Failure`。
+- 标准错误码集中在 `ErrorCodes`，例如：
+  - `DETAIL_NOT_FOUND`
+  - `UPDATE_NOT_FOUND`
 
-### 4.2 关键用例（Use Cases）
-- 首页：`LoadHomeFeedsUseCase`
-- 详情：`GetAppDetailUseCase`
-- 搜索：`SearchAppsUseCase`
-- 安装：`InstallAppUseCase`
-- 升级：`UpdateAppUseCase`
-- 卸载：`UninstallAppUseCase`
-- 检查更新：`CheckUpdatesUseCase`
-- 批量更新：`BatchUpdateUseCase`
-- 设置变更：`UpdateUserSettingUseCase`
+## 7. 测试基线
 
----
+- `UpdateStateMachineTest`：状态机转移规则。
+- `DataLayerSmokeTest`：各 data 仓储基础行为。
+- `LauncherE2ESmokeTest`：主链路成功与失败分支。
 
-## 5. 页面级设计（UI 状态与交互）
+## 8. V1 后续建议
 
-### 5.1 首页（Home）
-- 内容：推荐位、分类入口、最近更新、已安装应用快捷入口。
-- 状态：`Loading / Content / Empty / Error`。
-- 关键交互：点击卡片进详情；一键更新入口。
-
-### 5.2 详情页（Detail）
-- 内容：应用信息、版本、截图、评分、更新日志。
-- CTA：安装/打开/更新/卸载。
-- 状态：`Idle / Installing / Updating / Failed / Installed`。
-
-### 5.3 搜索页（Search）
-- 内容：热搜词、联想词、历史记录、结果列表。
-- 能力：输入防抖、拼写纠错、空结果推荐。
-
-### 5.4 设置页（Settings）
-- 网络下载策略（仅 Wi-Fi / 任意网络 + 提醒）。
-- 自动更新开关（夜间或驻车时策略可预留）。
-- 通知与提示开关。
-- 缓存管理、版本信息、诊断入口（导出日志）。
-
-### 5.5 更新中心（Update Center）
-- 列表展示可更新应用。
-- 支持“全部更新”“暂停/继续”。
-- 展示每个任务进度与失败原因。
-
----
-
-## 6. 关键流程设计
-
-### 6.1 安装流程
-1. UI 发起安装事件。
-2. `InstallAppUseCase` 校验网络/存储/签名策略。
-3. 调用 `UpdateEngine` 创建下载任务。
-4. 下载完成后执行包校验与安装。
-5. 回传状态到 UI（成功/失败/可重试）。
-
-### 6.2 更新检查流程
-1. 前台进入首页或定时任务触发 `CheckUpdatesUseCase`。
-2. 对比本地已安装版本与服务端版本。
-3. 生成更新列表并缓存。
-4. 若有更新，触发角标/通知/弹窗（遵循设置策略）。
-
-### 6.3 弱网恢复流程
-- 下载任务持久化到本地。
-- 网络恢复后由调度器自动续传。
-- 超过阈值失败触发降级策略（暂停并提示用户）。
-
----
-
-## 7. 数据与缓存策略
-
-### 7.1 数据分层
-- 远端数据源：应用列表、详情、搜索、版本信息。
-- 本地数据源：已安装应用快照、更新缓存、搜索历史、设置项。
-
-### 7.2 缓存策略（V1 建议）
-- 首页/详情：`Cache-Aside + TTL`。
-- 搜索：结果短缓存 + 历史长期缓存。
-- 更新列表：会话内强一致，跨会话按 TTL 刷新。
-
-### 7.3 一致性策略
-- 安装成功后，立即刷新本地安装态并异步同步云端。
-- 若云端同步失败，不阻塞本地状态更新。
-
----
-
-## 8. 安全与合规
-
-- 应用包签名校验、哈希校验。
-- 下载链路 HTTPS + 证书校验。
-- 安装来源白名单（官方源）。
-- 敏感日志脱敏（token、设备标识）。
-- 权限最小化：仅申请安装、网络、存储必要权限。
-
----
-
-## 9. 可观测性与运维
-
-### 9.1 指标
-- 首页加载成功率与耗时。
-- 搜索成功率、零结果率。
-- 下载成功率、安装成功率、平均更新耗时。
-- 崩溃率、ANR 率（如平台支持）。
-
-### 9.2 日志与追踪
-- 关键链路统一 traceId（搜索->详情->安装）。
-- 错误码规范化（网络、空间不足、签名失败、安装失败）。
-
-### 9.3 告警
-- 更新任务大面积失败告警。
-- 服务接口错误率阈值告警。
-
----
-
-## 10. 版本演进路线图
-
-### V1（当前目标）
-- 完成首页、详情、搜索、设置、更新中心核心链路。
-- 完成下载/安装/更新的基础任务引擎。
-- 完成基础日志和指标。
-
-### V1.1
-- 支持灰度发布（按车型/地区/用户组）。
-- 提升搜索排序（个性化特征）。
-- 支持安装前兼容性检查增强（系统版本、空间阈值）。
-
-### V2
-- 专题运营位、榜单、活动页。
-- AB 实验平台接入。
-- 更强的离线策略和边缘缓存。
-
----
-
-## 11. 技术落地建议（第一步）
-
-1. 先搭“骨架工程”：分层 + 模块目录 + 依赖规则。
-2. 先打通一条主链路：`首页 -> 详情 -> 安装`。
-3. 把更新中心作为第二优先级独立 feature 落地。
-4. 同步建设日志、错误码、任务状态机，避免后期返工。
-5. 通过接口契约（API schema）先冻结服务端字段，减少联调风险。
-
----
-
-## 12. 风险清单与预案
-
-- **系统能力差异**：不同车机系统安装接口差异大。  
-  预案：Platform 层做 Adapter 抽象 + 能力探测。
-- **弱网导致体验差**：下载中断与超时频发。  
-  预案：断点续传、重试退避、清晰状态提示。
-- **包安全风险**：第三方源或篡改包。  
-  预案：官方源白名单 + 强签名校验。
-- **模块膨胀**：功能迭代后边界变模糊。  
-  预案：强制依赖检查 + 架构评审 gate。
-
----
-
-## 13. 下一步协作方式（建议）
-
-下一轮可以按以下顺序继续：
-1. 先定义 `Domain` 层实体与 UseCase 接口（不绑具体框架）。
-2. 再细化 `UpdateEngine` 状态机（状态、事件、转移、错误码）。
-3. 最后落到某一技术栈（如 Android/Kotlin）给出模块脚手架与示例代码。
-
-
-## 14. V1 提交基线（用于发布）
-
-为方便“提交一版本到 GitHub”，建议将本方案作为 **`v1-architecture-baseline`** 基线文档，并在仓库中同步以下发布清单：
-
-- `ARCHITECTURE_VERSION = v1.0.0`
-- 文档范围：架构与模块边界，不包含具体 API 字段冻结后的实现细节。
-- 验收口径：
-  - 已覆盖首页/详情/搜索/设置/更新中心的功能与职责拆分；
-  - 已给出核心链路（安装、更新检查、弱网恢复）；
-  - 已定义安全、可观测性、风险与迭代路线。
-
+- 接入真实远端/本地数据源并增加缓存策略。
+- 将 `batchUpdate` 失败项可观测化（成功、失败明细同时返回）。
+- 补充 Gradle Wrapper 与 CI，统一构建/测试入口。

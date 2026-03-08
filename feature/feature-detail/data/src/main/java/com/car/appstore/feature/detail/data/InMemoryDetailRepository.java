@@ -4,6 +4,7 @@ import com.car.appstore.core.domain.AppDetail;
 import com.car.appstore.core.domain.AppId;
 import com.car.appstore.core.domain.DomainError;
 import com.car.appstore.core.domain.DomainResult;
+import com.car.appstore.core.domain.ErrorCodes;
 import com.car.appstore.feature.detail.domain.DetailRepository;
 
 import java.util.HashMap;
@@ -20,7 +21,7 @@ public class InMemoryDetailRepository implements DetailRepository {
     public DomainResult<AppDetail> getAppDetail(AppId appId) {
         AppDetail detail = detailMap.get(appId);
         if (detail == null) {
-            return new DomainResult.Failure<>(new DomainError("DETAIL_NOT_FOUND", "app detail not found", null));
+            return new DomainResult.Failure<>(new DomainError(ErrorCodes.DETAIL_NOT_FOUND, "app detail not found", null));
         }
         return new DomainResult.Success<>(detail);
     }

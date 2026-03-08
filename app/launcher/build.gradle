@@ -3,6 +3,7 @@ dependencies {
     implementation project(':core:core-update-engine')
 
     implementation project(':feature:feature-home:data')
+    implementation project(':feature:feature-detail:data')
     implementation project(':feature:feature-search:data')
     implementation project(':feature:feature-settings:data')
     implementation project(':feature:feature-update-center:data')
