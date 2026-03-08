@@ -285,6 +285,7 @@ platform/
 2. 再细化 `UpdateEngine` 状态机（状态、事件、转移、错误码）。
 3. 最后落到某一技术栈（如 Android/Kotlin）给出模块脚手架与示例代码。
 
+
 ## 14. V1 提交基线（用于发布）
 
 为方便“提交一版本到 GitHub”，建议将本方案作为 **`v1-architecture-baseline`** 基线文档，并在仓库中同步以下发布清单：

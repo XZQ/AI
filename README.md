@@ -12,6 +12,24 @@
 
 ## 下一步建议
 
+1. ✅ 已新增 `core-update-engine`，实现更新任务状态机与迁移规则；
+2. ✅ 已为每个 feature 增加 `data` 层仓储实现（当前为 in-memory 版本）；
+3. 接入一个最小可运行入口模块进行端到端联调。
+
+
+## 本地测试
+
+执行：
+
+```bash
+./scripts/run_tests.sh
+```
+
+该脚本会编译全部 main 源码，并执行：
+- `UpdateStateMachineTest`
+- `DataLayerSmokeTest`
+
 1. 新增 `core-update-engine`，实现更新任务状态机；
 2. 为每个 feature 增加 `data` 层仓储实现（远端 + 本地）；
 3. 接入一个最小可运行入口模块进行端到端联调。
+
