@@ -1,5 +1,9 @@
 # Car AppStore Architecture Skeleton
 
+Project context for future sessions:
+
+- `docs/PROJECT_CONTEXT.md`
+
 这是一个车载应用商店的分层 + 模块化骨架工程（Java 11），已包含可运行的 Android App 模块。
 
 ## 当前范围
