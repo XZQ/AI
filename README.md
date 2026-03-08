@@ -28,3 +28,8 @@
 该脚本会编译全部 main 源码，并执行：
 - `UpdateStateMachineTest`
 - `DataLayerSmokeTest`
+
+1. 新增 `core-update-engine`，实现更新任务状态机；
+2. 为每个 feature 增加 `data` 层仓储实现（远端 + 本地）；
+3. 接入一个最小可运行入口模块进行端到端联调。
+
