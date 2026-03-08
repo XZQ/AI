@@ -14,7 +14,7 @@ if (Test-Path $outDir) {
 }
 New-Item -ItemType Directory -Path $outDir | Out-Null
 
-$mainSources = Get-ChildItem -Recurse -File -Include *.java -Path core, feature, app |
+$mainSources = Get-ChildItem -Recurse -File -Include *.java -Path core, feature, app\launcher |
     Where-Object { $_.FullName -match "\\src\\main\\java\\" } |
     ForEach-Object { $_.FullName }
 

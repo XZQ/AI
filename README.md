@@ -1,6 +1,6 @@
 # Car AppStore Architecture Skeleton
 
-这是一个车载应用商店的分层 + 模块化骨架工程（Java 11）。
+这是一个车载应用商店的分层 + 模块化骨架工程（Java 11），已包含可运行的 Android App 模块。
 
 ## 当前范围
 
@@ -13,6 +13,7 @@
 
 ```text
 app/
+  car-store/                # Android 入口应用（可在 Android Studio 运行）
   launcher/
 core/
   core-common/
@@ -43,6 +44,14 @@ scripts/
 ./scripts/run_tests.ps1
 ./scripts/run_launcher.ps1
 ```
+
+## 在 Android Studio 运行
+
+1. 使用 Android Studio 打开项目根目录。
+2. 等待 Gradle Sync 完成（项目已包含 `gradlew` 和 Android 模块）。
+3. 在 Android Studio 中将 Gradle JDK 设为 17（例如 JetBrains Runtime 17）。
+4. 选择运行配置 `app:car-store`。
+5. 在模拟器或真机（Android 7.0+）上运行。
 
 测试脚本会执行：
 
