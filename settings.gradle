@@ -12,4 +12,3 @@ include ':feature:feature-detail:data'
 include ':feature:feature-search:data'
 include ':feature:feature-settings:data'
 include ':feature:feature-update-center:data'
-
