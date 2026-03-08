@@ -52,4 +52,8 @@ git push -u origin feature/<your-topic>
 ./scripts/run_launcher.sh
 ```
 
-输出会演示 Home/Search/Settings/Update 和 UpdateEngine 状态机链路。
+
+1. 新增 `core-update-engine`，实现更新任务状态机；
+2. 为每个 feature 增加 `data` 层仓储实现（远端 + 本地）；
+3. 接入一个最小可运行入口模块进行端到端联调。
+
