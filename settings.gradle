@@ -6,7 +6,6 @@ include ':feature:feature-detail:domain'
 include ':feature:feature-search:domain'
 include ':feature:feature-settings:domain'
 include ':feature:feature-update-center:domain'
-
 include ':core:core-update-engine'
 include ':feature:feature-home:data'
 include ':feature:feature-detail:data'
