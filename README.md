@@ -1,6 +1,6 @@
 # Car AppStore Architecture Skeleton
 
-这是一个车载应用商店的分层 + 模块化骨架工程（Java 17）。
+这是一个车载应用商店的分层 + 模块化骨架工程（Java 11）。
 
 ## 当前范围
 

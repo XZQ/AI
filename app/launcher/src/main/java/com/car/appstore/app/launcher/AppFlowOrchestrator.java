@@ -41,26 +41,55 @@ public class AppFlowOrchestrator {
         }
 
         return new FlowReport(
-                homeResult instanceof DomainResult.Success<List<AppInfo>>,
-                detailResult instanceof DomainResult.Success<AppDetail>,
-                settingsResult instanceof DomainResult.Success<UserSetting>,
-                updateResult instanceof DomainResult.Success<InstallTask>,
+                homeResult instanceof DomainResult.Success,
+                detailResult instanceof DomainResult.Success,
+                settingsResult instanceof DomainResult.Success,
+                updateResult instanceof DomainResult.Success,
                 errorCode
         );
     }
 
     private static <T> String extractErrorCode(DomainResult<T> result) {
-        if (result instanceof DomainResult.Failure<T> failure) {
+        if (result instanceof DomainResult.Failure) {
+            DomainResult.Failure<T> failure = (DomainResult.Failure<T>) result;
             return failure.error().code();
         }
         return null;
     }
 
-    public record FlowReport(
-            boolean homeLoaded,
-            boolean detailLoaded,
-            boolean settingsLoaded,
-            boolean updateSucceeded,
-            String errorCode
-    ) {}
+    public static final class FlowReport {
+        private final boolean homeLoaded;
+        private final boolean detailLoaded;
+        private final boolean settingsLoaded;
+        private final boolean updateSucceeded;
+        private final String errorCode;
+
+        public FlowReport(boolean homeLoaded, boolean detailLoaded, boolean settingsLoaded, boolean updateSucceeded, String errorCode) {
+            this.homeLoaded = homeLoaded;
+            this.detailLoaded = detailLoaded;
+            this.settingsLoaded = settingsLoaded;
+            this.updateSucceeded = updateSucceeded;
+            this.errorCode = errorCode;
+        }
+
+        public boolean homeLoaded() {
+            return homeLoaded;
+        }
+
+        public boolean detailLoaded() {
+            return detailLoaded;
+        }
+
+        public boolean settingsLoaded() {
+            return settingsLoaded;
+        }
+
+        public boolean updateSucceeded() {
+            return updateSucceeded;
+        }
+
+        public String errorCode() {
+            return errorCode;
+        }
+    }
 }

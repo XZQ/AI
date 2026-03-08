@@ -6,10 +6,10 @@ rm -rf "$OUT_DIR"
 mkdir -p "$OUT_DIR"
 
 # Compile production sources
-javac --release 17 -d "$OUT_DIR" $(find core feature app -name "*.java" -path "*/src/main/java/*" 2>/dev/null)
+javac --release 11 -d "$OUT_DIR" $(find core feature app -name "*.java" -path "*/src/main/java/*" 2>/dev/null)
 
 # Compile test sources (no external dependencies)
-javac --release 17 -cp "$OUT_DIR" -d "$OUT_DIR" \
+javac --release 11 -cp "$OUT_DIR" -d "$OUT_DIR" \
   core/core-update-engine/src/test/java/com/car/appstore/core/updateengine/UpdateStateMachineTest.java \
   tests/src/DataLayerSmokeTest.java \
   tests/src/LauncherE2ESmokeTest.java

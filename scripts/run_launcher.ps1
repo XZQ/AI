@@ -18,5 +18,5 @@ $mainSources = Get-ChildItem -Recurse -File -Include *.java -Path core, feature,
     Where-Object { $_.FullName -match "\\src\\main\\java\\" } |
     ForEach-Object { $_.FullName }
 
-Invoke-Checked { javac --release 17 -d $outDir $mainSources }
+Invoke-Checked { javac --release 11 -d $outDir $mainSources }
 Invoke-Checked { java -cp $outDir com.car.appstore.app.launcher.AppLauncher }

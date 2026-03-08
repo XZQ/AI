@@ -18,7 +18,7 @@ $mainSources = Get-ChildItem -Recurse -File -Include *.java -Path core, feature,
     Where-Object { $_.FullName -match "\\src\\main\\java\\" } |
     ForEach-Object { $_.FullName }
 
-Invoke-Checked { javac --release 17 -d $outDir $mainSources }
+Invoke-Checked { javac --release 11 -d $outDir $mainSources }
 
 $testSources = @(
     "core\core-update-engine\src\test\java\com\car\appstore\core\updateengine\UpdateStateMachineTest.java",
@@ -26,7 +26,7 @@ $testSources = @(
     "tests\src\LauncherE2ESmokeTest.java"
 )
 
-Invoke-Checked { javac --release 17 -cp $outDir -d $outDir $testSources }
+Invoke-Checked { javac --release 11 -cp $outDir -d $outDir $testSources }
 
 Invoke-Checked { java -cp $outDir com.car.appstore.core.updateengine.UpdateStateMachineTest }
 Invoke-Checked { java -cp $outDir DataLayerSmokeTest }

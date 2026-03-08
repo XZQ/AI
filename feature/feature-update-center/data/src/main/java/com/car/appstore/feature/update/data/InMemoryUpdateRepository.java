@@ -52,9 +52,11 @@ public class InMemoryUpdateRepository implements UpdateRepository {
 
         for (AppId appId : appIds) {
             DomainResult<InstallTask> result = updateApp(appId);
-            if (result instanceof DomainResult.Success<InstallTask> success) {
+            if (result instanceof DomainResult.Success) {
+                DomainResult.Success<InstallTask> success = (DomainResult.Success<InstallTask>) result;
                 succeeded.add(success.value());
-            } else if (result instanceof DomainResult.Failure<InstallTask> failure) {
+            } else if (result instanceof DomainResult.Failure) {
+                DomainResult.Failure<InstallTask> failure = (DomainResult.Failure<InstallTask>) result;
                 failed.put(appId, failure.error());
             }
         }
