@@ -1,0 +1,8 @@
+rootProject.name = 'car-appstore'
+
+include ':core:core-common'
+include ':feature:feature-home:domain'
+include ':feature:feature-detail:domain'
+include ':feature:feature-search:domain'
+include ':feature:feature-settings:domain'
+include ':feature:feature-update-center:domain'

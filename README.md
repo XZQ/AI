@@ -1,0 +1,17 @@
+# Car AppStore Architecture Skeleton
+
+这是“车载应用商店”按分层 + 模块化落地的第一步实现：
+
+- 建立 Java 多模块工程骨架；
+- 建立 `core-common` 领域模型与统一 `DomainResult`；
+- 建立 `home/detail/search/settings/update-center` 的 Domain 接口与 UseCase 契约。
+
+## 当前范围
+
+仅包含 Domain 契约层，不含 Data / Platform / UI 具体实现。
+
+## 下一步建议
+
+1. 新增 `core-update-engine`，实现更新任务状态机；
+2. 为每个 feature 增加 `data` 层仓储实现（远端 + 本地）；
+3. 接入一个最小可运行入口模块进行端到端联调。
