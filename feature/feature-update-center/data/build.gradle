@@ -1,5 +1,5 @@
 dependencies {
     implementation project(':core:core-common')
     implementation project(':core:core-update-engine')
-    implementation project(':feature:feature-update-center:domain')
+    api project(':feature:feature-update-center:domain')
 }

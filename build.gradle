@@ -1,17 +1,33 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.4.2'
+    }
+}
+
 allprojects {
     group = 'com.car.appstore'
     version = '0.1.0'
 
     repositories {
+        google()
         mavenCentral()
     }
 }
 
-subprojects {
-    apply plugin: 'java-library'
+subprojects { subproject ->
+    subproject.group = "com.car.appstore." + subproject.path.substring(1).replace(':', '.')
 
-    java {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+    if (subproject.path != ':app:car-store') {
+        apply plugin: 'java-library'
+        archivesBaseName = subproject.path.substring(1).replace(':', '-')
+
+        java {
+            sourceCompatibility = JavaVersion.VERSION_11
+            targetCompatibility = JavaVersion.VERSION_11
+        }
     }
 }
