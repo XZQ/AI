@@ -12,5 +12,5 @@ public interface UpdateRepository {
 
     DomainResult<InstallTask> updateApp(AppId appId);
 
-    DomainResult<List<InstallTask>> batchUpdate(List<AppId> appIds);
+    DomainResult<BatchUpdateReport> batchUpdate(List<AppId> appIds);
 }

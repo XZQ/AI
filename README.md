@@ -1,37 +1,54 @@
 # Car AppStore Architecture Skeleton
 
-这是“车载应用商店”按分层 + 模块化落地的第一步实现：
-
-- 建立 Java 多模块工程骨架；
-- 建立 `core-common` 领域模型与统一 `DomainResult`；
-- 建立 `home/detail/search/settings/update-center` 的 Domain 接口与 UseCase 契约。
+这是一个车载应用商店的分层 + 模块化骨架工程（Java 17）。
 
 ## 当前范围
 
-仅包含 Domain 契约层，不含 Data / Platform / UI 具体实现。
+- 已完成 `core-common` 领域模型与统一 `DomainResult`。
+- 已完成 `home/detail/search/settings/update-center` 的 Domain 接口与 in-memory Data 实现。
+- 已完成 `core-update-engine` 更新状态机及基础测试。
+- 已完成最小可运行入口 `app:launcher`（主链路编排 + 状态机演示）。
 
-## 下一步建议
+## 工程结构
 
-1. ✅ 已新增 `core-update-engine`，实现更新任务状态机与迁移规则；
-2. ✅ 已为每个 feature 增加 `data` 层仓储实现（当前为 in-memory 版本）；
-3. 接入一个最小可运行入口模块进行端到端联调。
+```text
+app/
+  launcher/
+core/
+  core-common/
+  core-update-engine/
+feature/
+  feature-home/{domain,data}
+  feature-detail/{domain,data}
+  feature-search/{domain,data}
+  feature-settings/{domain,data}
+  feature-update-center/{domain,data}
+tests/
+  src/
+scripts/
+```
 
+## 本地运行与测试
 
-## 本地测试
-
-执行：
+### Linux / macOS / Git Bash
 
 ```bash
 ./scripts/run_tests.sh
+./scripts/run_launcher.sh
 ```
 
-该脚本会编译全部 main 源码，并执行：
+### Windows PowerShell
+
+```powershell
+./scripts/run_tests.ps1
+./scripts/run_launcher.ps1
+```
+
+测试脚本会执行：
+
 - `UpdateStateMachineTest`
 - `DataLayerSmokeTest`
-
-## 用户指定标记
-
-123456
+- `LauncherE2ESmokeTest`
 
 ## PR 提交流程（简版）
 
@@ -44,16 +61,3 @@ git add .
 git commit -m "feat: <summary>"
 git push -u origin feature/<your-topic>
 ```
-
-
-## 启动最小可运行入口（Step3）
-
-```bash
-./scripts/run_launcher.sh
-```
-
-
-1. 新增 `core-update-engine`，实现更新任务状态机；
-2. 为每个 feature 增加 `data` 层仓储实现（远端 + 本地）；
-3. 接入一个最小可运行入口模块进行端到端联调。
-

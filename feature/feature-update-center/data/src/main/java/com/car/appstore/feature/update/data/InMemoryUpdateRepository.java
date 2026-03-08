@@ -3,16 +3,17 @@ package com.car.appstore.feature.update.data;
 import com.car.appstore.core.domain.AppId;
 import com.car.appstore.core.domain.DomainError;
 import com.car.appstore.core.domain.DomainResult;
+import com.car.appstore.core.domain.ErrorCodes;
 import com.car.appstore.core.domain.InstallTask;
 import com.car.appstore.core.domain.InstallTaskStatus;
 import com.car.appstore.core.domain.UpdateInfo;
+import com.car.appstore.feature.update.domain.BatchUpdateReport;
 import com.car.appstore.feature.update.domain.UpdateRepository;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class InMemoryUpdateRepository implements UpdateRepository {
     private final Map<AppId, UpdateInfo> updateMap;
@@ -32,7 +33,7 @@ public class InMemoryUpdateRepository implements UpdateRepository {
     @Override
     public DomainResult<InstallTask> updateApp(AppId appId) {
         if (!updateMap.containsKey(appId)) {
-            return new DomainResult.Failure<>(new DomainError("UPDATE_NOT_FOUND", "no update found for app", null));
+            return new DomainResult.Failure<>(new DomainError(ErrorCodes.UPDATE_NOT_FOUND, "no update found for app", null));
         }
         InstallTask task = new InstallTask(
                 "task-" + appId.value(),
@@ -45,12 +46,19 @@ public class InMemoryUpdateRepository implements UpdateRepository {
     }
 
     @Override
-    public DomainResult<List<InstallTask>> batchUpdate(List<AppId> appIds) {
-        List<InstallTask> tasks = appIds.stream()
-                .map(this::updateApp)
-                .filter(result -> result instanceof DomainResult.Success<InstallTask>)
-                .map(result -> ((DomainResult.Success<InstallTask>) result).value())
-                .collect(Collectors.toList());
-        return new DomainResult.Success<>(tasks);
+    public DomainResult<BatchUpdateReport> batchUpdate(List<AppId> appIds) {
+        List<InstallTask> succeeded = new ArrayList<>();
+        Map<AppId, DomainError> failed = new HashMap<>();
+
+        for (AppId appId : appIds) {
+            DomainResult<InstallTask> result = updateApp(appId);
+            if (result instanceof DomainResult.Success<InstallTask> success) {
+                succeeded.add(success.value());
+            } else if (result instanceof DomainResult.Failure<InstallTask> failure) {
+                failed.put(appId, failure.error());
+            }
+        }
+
+        return new DomainResult.Success<>(new BatchUpdateReport(succeeded, failed));
     }
 }
